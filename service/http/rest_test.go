@@ -39,7 +39,7 @@ func TestNewHTTPService(t *testing.T) {
 		handler := &mockHandler{}
 		customLogger := logger.NewLogger()
 		svc := NewHTTPService("test",
-			WithAddress(":8080"),
+			WithAddr(":8080"),
 			WithHandler(handler),
 			WithLogger(customLogger),
 		)
@@ -60,7 +60,7 @@ func TestHTTPService_Start(t *testing.T) {
 		}
 
 		svc := NewHTTPService("test",
-			WithAddress(testPort),
+			WithAddr(testPort),
 			WithHandler(handler),
 		)
 
@@ -88,7 +88,7 @@ func TestHTTPService_Start(t *testing.T) {
 	})
 
 	t.Run("already_started", func(t *testing.T) {
-		svc := NewHTTPService("test", WithAddress(testPort))
+		svc := NewHTTPService("test", WithAddr(testPort))
 		ctx := context.Background()
 
 		// Start first time
@@ -107,7 +107,7 @@ func TestHTTPService_Start(t *testing.T) {
 
 func TestHTTPService_Stop(t *testing.T) {
 	t.Run("successful_stop", func(t *testing.T) {
-		svc := NewHTTPService("test", WithAddress(testPort))
+		svc := NewHTTPService("test", WithAddr(testPort))
 		ctx := context.Background()
 
 		// Start service
@@ -127,7 +127,7 @@ func TestHTTPService_Stop(t *testing.T) {
 
 func TestHTTPService_Health(t *testing.T) {
 	t.Run("healthy_service", func(t *testing.T) {
-		svc := NewHTTPService("test", WithAddress(testPort))
+		svc := NewHTTPService("test", WithAddr(testPort))
 		ctx := context.Background()
 
 		// Start service
@@ -184,7 +184,7 @@ func TestHTTPService_Integration(t *testing.T) {
 
 	// Create service with test server's handler
 	svc := NewHTTPService("test",
-		WithAddress(testPort),
+		WithAddr(testPort),
 		WithHandler(ts.Config.Handler),
 	)
 

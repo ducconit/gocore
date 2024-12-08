@@ -4,24 +4,48 @@ A lightweight and flexible core library for Go applications by DNT.
 
 ## Features
 
-### Configuration Management
-- Flexible configuration loading from multiple sources
-- Type-safe configuration access
-- Default value support
-- Environment variable support
-- Comprehensive configuration methods (Get, GetString, GetInt, etc.)
-
 ### Service Management
-- HTTP service management with graceful start/stop
+- HTTP service with graceful start/stop
 - Health check support
-- Flexible service configuration
+- Middleware integration
 - Logging integration
-- Signal handling (SIGTERM, Interrupt)
+- Signal handling
 
-### Utilities
-- OS signal handling
-- Graceful shutdown support
-- Cross-platform compatibility
+### Configuration Management
+- Multiple configuration sources (YAML, JSON, ENV)
+- Type-safe configuration access
+- Dynamic configuration updates
+- Configuration validation
+- Environment variable support
+
+### Caching System
+- Multiple cache backends (Memory, Redis)
+- TTL support
+- Cache tags
+- Bulk operations
+- Automatic key expiration
+
+### Message Queue
+- Multiple queue backends
+- Message patterns (Pub/Sub, Work Queue, RPC)
+- Dead letter queue
+- Message retry
+- Priority queue
+
+### Logging System
+- Multiple log levels
+- Structured logging
+- Output formatting
+- Log rotation
+- Context-aware logging
+
+### Error Handling
+- Error wrapping
+- Stack traces
+- Error types
+- HTTP error integration
+- Error context
+- Localization support
 
 ## Installation
 
@@ -29,61 +53,151 @@ A lightweight and flexible core library for Go applications by DNT.
 go get github.com/ducconit/gocore
 ```
 
-## Usage Examples
+## Quick Start
 
-### Configuration Management
+### HTTP Service
+
+```go
+import (
+    "github.com/ducconit/gocore/service"
+    "github.com/ducconit/gocore/service/http"
+)
+
+func main() {
+    // Create HTTP service
+    srv := http.NewHTTPService(
+        http.WithAddr(":8080"),
+    )
+
+    // Add routes
+    srv.GET("/health", func(c *gin.Context) {
+        c.JSON(200, gin.H{"status": "ok"})
+    })
+
+    // Start service
+    if err := srv.Start(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### WebSocket Service
+
+```go
+import "github.com/ducconit/gocore/service/websocket"
+
+func main() {
+    // Create WebSocket service
+    ws := websocket.NewPusherService(
+        websocket.WithAddr(":6001"),
+        websocket.WithAppKey("app-key"),
+        websocket.WithSecret("secret"),
+    )
+
+    // Start service
+    if err := ws.Start(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### Configuration
+
 ```go
 import "github.com/ducconit/gocore/config"
 
-// Create new configuration
-cfg := config.NewConfig()
+func main() {
+    // Create configuration
+    cfg := config.New(
+        config.WithFile("config.yaml"),
+        config.WithEnv(),
+    )
 
-// Load configuration from file
-err := cfg.LoadFromFile("config.yaml")
-if err != nil {
-    log.Fatal(err)
+    // Access configuration
+    port := cfg.GetInt("server.port", 8080)
+    host := cfg.GetString("server.host", "localhost")
 }
-
-// Access configuration values
-port := cfg.GetInt("server.port")
-host := cfg.GetString("server.host")
 ```
 
-### HTTP Service
+### Caching
+
 ```go
-import "github.com/ducconit/gocore/service"
+import "github.com/ducconit/gocore/cache"
 
-// Create new HTTP service
-svc := service.NewHTTPService("api",
-    service.WithAddress(":8080"),
-    service.WithHandler(handler),
-)
+func main() {
+    // Create cache
+    c := cache.NewRedisCache(
+        cache.WithRedisAddr("localhost:6379"),
+    )
 
-// Start service
-err := svc.Start(context.Background())
-if err != nil {
-    log.Fatal(err)
+    // Use cache
+    c.Set("key", "value", 5*time.Minute)
+    val, err := c.Get("key")
 }
-
-// Graceful shutdown
-svc.Stop(context.Background())
 ```
 
-### Signal Handling
+### Logging
+
 ```go
-import "github.com/ducconit/gocore/utils"
+import "github.com/ducconit/gocore/logger"
 
-// Register interrupt handler
-utils.RegisterSignalInterruptHandler(func() {
-    // Cleanup code here
-})
+func main() {
+    // Create logger
+    log := logger.New(
+        logger.WithLevel(logger.InfoLevel),
+        logger.WithFormat(logger.JSONFormat),
+    )
+
+    // Log messages
+    log.Info("Server starting", logger.Fields{
+        "port": 8080,
+    })
+}
 ```
 
-## Requirements
-- Go 1.23.2 or higher
+### Error Handling
+
+```go
+import "github.com/ducconit/gocore/errors"
+
+func main() {
+    // Create error
+    err := errors.NewWithCode(404, "user not found").
+        WithContext("user_id", 123)
+
+    // Handle error
+    if e, ok := err.(errors.Error); ok {
+        fmt.Printf("Code: %d, Message: %s\n", e.Code(), e.Message())
+    }
+}
+```
+
+## Documentation
+
+Detailed documentation for each package can be found in their respective directories:
+
+- [Service Package](service/README.md)
+- [Configuration Package](config/README.md)
+- [Cache Package](cache/README.md)
+- [Queue Package](queue/README.md)
+- [Logger Package](logger/README.md)
+- [Errors Package](errors/README.md)
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
+
 MIT License
+
+## Support
+
+For support, please open an issue in the GitHub repository.
 
 ## Contributors
 

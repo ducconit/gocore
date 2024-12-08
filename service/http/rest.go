@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/ducconit/gocore/logger"
+	"github.com/ducconit/gocore/utils"
 	"go.uber.org/zap"
 )
 
@@ -50,8 +53,8 @@ func NewHTTPService(name string, opts ...HTTPOption) *HTTPService {
 	return s
 }
 
-// Start implements Service.Start
-func (s *HTTPService) Start(ctx context.Context) error {
+// StartDaemon starts the HTTP service in daemon mode (non-blocking)
+func (s *HTTPService) StartDaemon(ctx context.Context) error {
 	s.mu.Lock()
 	if s.started {
 		s.mu.Unlock()
@@ -87,6 +90,28 @@ func (s *HTTPService) Start(ctx context.Context) error {
 			return
 		}
 	}()
+
+	return nil
+}
+
+// Start starts the HTTP service and blocks until interrupted
+func (s *HTTPService) Start() error {
+	// Create a context that can be cancelled
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start the service in daemon mode
+	if err := s.StartDaemon(ctx); err != nil {
+		return err
+	}
+
+	// Create signal channel to listen for interrupt signals
+	utils.WaitOSSignalHandler(func() {
+		s.logger.Info("Received signal, shutting down")
+		if err := s.Stop(context.Background()); err != nil {
+			s.logger.Error("Error shutting down service", zap.Error(err))
+		}
+	}, os.Interrupt, syscall.SIGTERM)
 
 	return nil
 }

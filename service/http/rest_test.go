@@ -65,7 +65,7 @@ func TestHTTPService_Start(t *testing.T) {
 		)
 
 		ctx := context.Background()
-		err := svc.Start(ctx)
+		err := svc.StartDaemon(ctx)
 		assert.NoError(t, err)
 		assert.True(t, svc.IsStarted())
 
@@ -92,11 +92,11 @@ func TestHTTPService_Start(t *testing.T) {
 		ctx := context.Background()
 
 		// Start first time
-		err := svc.Start(ctx)
+		err := svc.StartDaemon(ctx)
 		assert.NoError(t, err)
 
 		// Try to start again
-		err = svc.Start(ctx)
+		err = svc.StartDaemon(ctx)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "already started")
 
@@ -111,7 +111,7 @@ func TestHTTPService_Stop(t *testing.T) {
 		ctx := context.Background()
 
 		// Start service
-		err := svc.Start(ctx)
+		err := svc.StartDaemon(ctx)
 		assert.NoError(t, err)
 		assert.True(t, svc.IsStarted())
 
@@ -131,7 +131,7 @@ func TestHTTPService_Health(t *testing.T) {
 		ctx := context.Background()
 
 		// Start service
-		err := svc.Start(ctx)
+		err := svc.StartDaemon(ctx)
 		assert.NoError(t, err)
 
 		// Check health
@@ -191,7 +191,7 @@ func TestHTTPService_Integration(t *testing.T) {
 	ctx := context.Background()
 
 	// Start service
-	err := svc.Start(ctx)
+	err := svc.StartDaemon(ctx)
 	assert.NoError(t, err)
 
 	// Wait for server to start

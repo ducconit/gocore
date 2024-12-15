@@ -36,6 +36,12 @@ func Panic(msg string, fields ...zap.Field) {
 	}
 }
 
+func With(fields ...zap.Field) *Logger {
+	if defaultLogger != nil {
+		return defaultLogger.With(fields...)
+	}
+	return nil
+}
 func Instance() *Logger {
 	return defaultLogger
 }

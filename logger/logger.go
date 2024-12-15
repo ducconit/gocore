@@ -162,3 +162,13 @@ func (l *Logger) Error(msg string, fields ...zap.Field) {
 func (l *Logger) Panic(msg string, fields ...zap.Field) {
 	l.Log(PanicLevel, msg, fields...)
 }
+
+func (l *Logger) With(fields ...zap.Field) *Logger {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return &Logger{
+		Logger:  l.Logger.With(fields...),
+		level:   l.level,
+		outputs: l.outputs,
+	}
+}

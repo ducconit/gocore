@@ -4,13 +4,6 @@ A lightweight and flexible core library for Go applications by DNT.
 
 ## Features
 
-### Service Management
-- HTTP service with graceful start/stop
-- Health check support
-- Middleware integration
-- Logging integration
-- Signal handling
-
 ### Configuration Management
 - Multiple configuration sources (YAML, JSON, ENV)
 - Type-safe configuration access
@@ -54,52 +47,6 @@ go get github.com/ducconit/gocore
 ```
 
 ## Quick Start
-
-### HTTP Service
-
-```go
-import (
-    "github.com/ducconit/gocore/service"
-    "github.com/ducconit/gocore/service/http"
-)
-
-func main() {
-    // Create HTTP service
-    srv := http.NewHTTPService(
-        http.WithAddr(":8080"),
-    )
-
-    // Add routes
-    srv.GET("/health", func(c *gin.Context) {
-        c.JSON(200, gin.H{"status": "ok"})
-    })
-
-    // Start service
-    if err := srv.Start(); err != nil {
-        log.Fatal(err)
-    }
-}
-```
-
-### WebSocket Service
-
-```go
-import "github.com/ducconit/gocore/service/websocket"
-
-func main() {
-    // Create WebSocket service
-    ws := websocket.NewPusherService(
-        websocket.WithAddr(":6001"),
-        websocket.WithAppKey("app-key"),
-        websocket.WithSecret("secret"),
-    )
-
-    // Start service
-    if err := ws.Start(); err != nil {
-        log.Fatal(err)
-    }
-}
-```
 
 ### Configuration
 
@@ -145,13 +92,11 @@ func main() {
     // Create logger
     log := logger.New(
         logger.WithLevel(logger.InfoLevel),
-        logger.WithFormat(logger.JSONFormat),
+        logger.WithOutput("path/to/file.log"),
     )
 
     // Log messages
-    log.Info("Server starting", logger.Fields{
-        "port": 8080,
-    })
+    log.Info("Server starting", zap.String("port", "3000"))
 }
 ```
 
@@ -176,7 +121,6 @@ func main() {
 
 Detailed documentation for each package can be found in their respective directories:
 
-- [Service Package](service/README.md)
 - [Configuration Package](config/README.md)
 - [Cache Package](cache/README.md)
 - [Queue Package](queue/README.md)

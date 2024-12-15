@@ -52,16 +52,15 @@ func WithFile(filename string) Option {
 	}
 }
 
-// WithTimeFormat sets the time format for log messages
-func WithTimeFormat(format string) Option {
-	return func(l *Logger) {
-		l.timeFormat = format
-	}
-}
-
 // WithOutput adds a custom output writer
 func WithOutput(w io.Writer) Option {
 	return func(l *Logger) {
 		l.outputs = append(l.outputs, w)
+	}
+}
+
+func WithGlobal() Option {
+	return func(l *Logger) {
+		SetDefault(l)
 	}
 }

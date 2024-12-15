@@ -57,10 +57,8 @@ log.Info("User logged in",
 | Option | Description | Default |
 |--------|-------------|---------|
 | WithLevel | Set logging level | InfoLevel |
-| WithFormat | Set output format (Text/JSON) | TextFormat |
-| WithOutput | Set output writer | os.Stdout |
+| WithFile | Set output writer | os.Stdout |
 | WithTimeFormat | Set time format | RFC3339 |
-| WithCaller | Include caller information | false |
 
 ## Log Levels
 
@@ -75,29 +73,9 @@ log.Info("User logged in",
 ### File Logging
 
 ```go
-file, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-if err != nil {
-    log.Fatal("Could not open log file", logger.Fields{"error": err})
-}
-
 log := logger.New(
-    logger.WithOutput(file),
-    logger.WithFormat(logger.JSONFormat),
-)
-```
-
-### Custom Formatter
-
-```go
-log := logger.New(
-    logger.WithFormatter(func(entry *logger.Entry) []byte {
-        // Custom formatting logic
-        return []byte(fmt.Sprintf("[%s] %s: %s\n",
-            entry.Time.Format(time.RFC3339),
-            entry.Level,
-            entry.Message,
-        ))
-    }),
+    logger.WithFile("path/to/log.log"),
+    logger.WithTimeFormat(time.RFC3339),
 )
 ```
 
@@ -105,9 +83,9 @@ log := logger.New(
 
 ```go
 ctx := context.Background()
-ctx = logger.WithContext(ctx, logger.Fields{
-    "request_id": "123",
-    "user_id":    "456",
+ctx = logger.WithContext(ctx,
+    zap.String("request_id", "123"),
+    zap.String("user_id", "456"),
 })
 
 log.FromContext(ctx).Info("Processing request")

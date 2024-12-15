@@ -11,23 +11,16 @@ import (
 // Logger represents a logger instance
 type Logger struct {
 	*zap.Logger
-	level      Level
-	outputs    []io.Writer
-	timeFormat string
-	mu         sync.RWMutex
+	level   Level
+	outputs []io.Writer
+	mu      sync.RWMutex
 }
 
-var (
-	defaultLogger *Logger
-	once          sync.Once
-)
-
-// NewLogger creates a new logger instance
-func NewLogger(opts ...Option) *Logger {
+// New creates a new logger instance
+func New(opts ...Option) *Logger {
 	l := &Logger{
-		level:      InfoLevel, // default level
-		outputs:    make([]io.Writer, 0),
-		timeFormat: "2006-01-02 15:04:05",
+		level:   InfoLevel, // default level
+		outputs: make([]io.Writer, 0),
 	}
 
 	// Apply options
@@ -45,7 +38,7 @@ func NewLogger(opts ...Option) *Logger {
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeLevel:    zapcore.LowercaseLevelEncoder,
-		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
@@ -66,19 +59,22 @@ func NewLogger(opts ...Option) *Logger {
 }
 
 // Default returns the default logger instance
-func Default() *Logger {
-	once.Do(func() {
-		defaultLogger = NewLogger(
-			WithLevel(InfoLevel),
-			WithConsole(),
-		)
-	})
-	return defaultLogger
+func Default(opts ...Option) *Logger {
+	options := append([]Option{
+		WithLevel(InfoLevel),
+		WithConsole(),
+	}, opts...)
+
+	return New(options...)
 }
 
 // SetDefault sets the default logger instance
 func SetDefault(l *Logger) {
 	defaultLogger = l
+}
+
+func init() {
+	SetDefault(Default())
 }
 
 // SetLevel sets the minimum log level
@@ -141,12 +137,28 @@ func (l *Logger) ClearOutputs() {
 	l.Logger = zap.New(zapcore.NewTee())
 }
 
-// With creates a child logger with the given fields
-func (l *Logger) With(fields ...zapcore.Field) *Logger {
-	return &Logger{
-		Logger:     l.Logger.With(fields...),
-		level:      l.level,
-		outputs:    l.outputs,
-		timeFormat: l.timeFormat,
-	}
+func (l *Logger) Log(level Level, msg string, fields ...zap.Field) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.Logger.Log(level, msg, fields...)
+}
+
+func (l *Logger) Debug(msg string, fields ...zap.Field) {
+	l.Log(DebugLevel, msg, fields...)
+}
+
+func (l *Logger) Info(msg string, fields ...zap.Field) {
+	l.Log(InfoLevel, msg, fields...)
+}
+
+func (l *Logger) Warn(msg string, fields ...zap.Field) {
+	l.Log(WarnLevel, msg, fields...)
+}
+
+func (l *Logger) Error(msg string, fields ...zap.Field) {
+	l.Log(ErrorLevel, msg, fields...)
+}
+
+func (l *Logger) Panic(msg string, fields ...zap.Field) {
+	l.Log(PanicLevel, msg, fields...)
 }

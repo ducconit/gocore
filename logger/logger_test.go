@@ -40,7 +40,7 @@ func TestNewLogger(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger := NewLogger(tt.opts...)
+			logger := New(tt.opts...)
 			assert.NotNil(t, logger)
 			assert.NotNil(t, logger.Logger)
 		})
@@ -72,10 +72,9 @@ func newTestLogger(buf *bytes.Buffer) *Logger {
 
 	// Create logger
 	l := &Logger{
-		Logger:     zap.New(core),
-		level:      DebugLevel,
-		outputs:    []io.Writer{buf},
-		timeFormat: "2006-01-02 15:04:05",
+		Logger:  zap.New(core),
+		level:   DebugLevel,
+		outputs: []io.Writer{buf},
 	}
 
 	return l
@@ -140,7 +139,7 @@ func TestLogger_FileOutput(t *testing.T) {
 
 	// Create logger with file output
 	logFile := filepath.Join(tmpDir, "test.log")
-	logger := NewLogger(WithFile(logFile))
+	logger := New(WithFile(logFile))
 
 	// Log some messages
 	msg := "test file output"
@@ -184,10 +183,9 @@ func TestLogger_MultipleOutputs(t *testing.T) {
 
 	// Create logger
 	logger := &Logger{
-		Logger:     zap.New(zapcore.NewTee(core1, core2)),
-		level:      DebugLevel,
-		outputs:    []io.Writer{&buf1, &buf2},
-		timeFormat: "2006-01-02 15:04:05",
+		Logger:  zap.New(zapcore.NewTee(core1, core2)),
+		level:   DebugLevel,
+		outputs: []io.Writer{&buf1, &buf2},
 	}
 
 	// Log message
@@ -225,24 +223,6 @@ func TestLogger_LevelParsing(t *testing.T) {
 			assert.Equal(t, tt.expected, level)
 		})
 	}
-}
-
-func TestLogger_DefaultLogger(t *testing.T) {
-	// Get default logger
-	logger1 := Default()
-	assert.NotNil(t, logger1)
-
-	// Get default logger again (should be same instance)
-	logger2 := Default()
-	assert.Same(t, logger1, logger2)
-
-	// Create custom default logger
-	customLogger := NewLogger(WithLevel(DebugLevel))
-	SetDefault(customLogger)
-
-	// Get default logger after setting custom
-	logger3 := Default()
-	assert.Same(t, customLogger, logger3)
 }
 
 func TestLogger_DynamicOutputs(t *testing.T) {
